@@ -14,7 +14,7 @@ From root directory run:
 
 ```bash
 docker build -t numbers .
-docker run -d --name mcontainer -p 80:80 myimage
+docker run -d --name mcontainer -p 80:80 numbers
 ```
 
 Application will be available on 0.0.0.0:80
