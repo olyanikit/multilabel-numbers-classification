@@ -27,8 +27,6 @@
         }
 
         #toolbar {
-            /* display: flex;
-            flex-direction: row; */
             padding: 5px;
             height: 100px;
             background-color: white;
@@ -68,8 +66,9 @@
 <body>
     <section class="container">
         <div id="toolbar">
-            <h1>Draw number from 0 to 999</h1>
+            <h1>Draw number from 10 to 99</h1>
             <button id="send">Get result</button>
+            <button id="clear">Clear</button>
         </div>
         <div class="drawing-board">
             <canvas id="drawing-board"></canvas>
@@ -134,18 +133,11 @@
                 ctx.fillText(result, 10, 50);
                 console.log(result);
             }
+            if (e.target.id === 'clear') {
+                console.log('CKREAWSF')
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         });
-
-        // toolbar.addEventListener('change', e => {
-        //     if(e.target.id === 'stroke') {
-        //         ctx.strokeStyle = e.target.value;
-        //     }
-
-        //     if(e.target.id === 'lineWidth') {
-        //         lineWidth = e.target.value;
-        //     }
-
-        // });
 
         const draw = (e) => {
             if (!isPainting) {
