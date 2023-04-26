@@ -1,0 +1,180 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            color: white;
+        }
+
+        h1 {
+            background: black;
+
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+        }
+
+        #toolbar {
+            /* display: flex;
+            flex-direction: row; */
+            padding: 5px;
+            height: 100px;
+            background-color: white;
+        }
+
+        #toolbar * {
+            margin-bottom: 6px;
+        }
+
+        #toolbar label {
+            font-size: 12px;
+        }
+
+        #toolbar input {
+            width: 100%;
+        }
+
+        #toolbar button {
+            background-color: gray;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            padding: 2px;
+            width: 100px;
+            height: 50px;
+        }
+
+        #drawing-board {
+            background-color: #202020;
+            width: 448;
+            height: 224;
+        }
+    </style>
+    <title>Drawing app</title>
+</head>
+
+<body>
+    <section class="container">
+        <div id="toolbar">
+            <h1>Draw number from 0 to 999</h1>
+            <button id="send">Get result</button>
+        </div>
+        <div class="drawing-board">
+            <canvas id="drawing-board"></canvas>
+        </div>
+    </section>
+    <script>
+        function makeBlob(dataURL) {
+            var BASE64_MARKER = ';base64,';
+            if (dataURL.indexOf(BASE64_MARKER) == -1) {
+                var parts = dataURL.split(',');
+                var contentType = parts[0].split(':')[1];
+                var raw = decodeURIComponent(parts[1]);
+                return new Blob([raw], { type: contentType });
+            }
+            var parts = dataURL.split(BASE64_MARKER);
+            var contentType = parts[0].split(':')[1];
+            var raw = window.atob(parts[1]);
+            var rawLength = raw.length;
+
+            var uInt8Array = new Uint8Array(rawLength);
+
+            for (var i = 0; i < rawLength; ++i) {
+                uInt8Array[i] = raw.charCodeAt(i);
+            }
+
+            return new Blob([uInt8Array], { type: contentType });
+        }
+        const canvas = document.getElementById('drawing-board');
+        const toolbar = document.getElementById('toolbar');
+        const ctx = canvas.getContext('2d');
+
+        const canvasOffsetX = canvas.offsetLeft;
+        const canvasOffsetY = canvas.offsetTop;
+
+        canvas.width = 448
+        canvas.height = 224
+
+        let isPainting = false;
+        let lineWidth = 18;
+        let startX;
+        let startY;
+
+        toolbar.addEventListener('click', async e => {
+            if (e.target.id === 'send') {
+                let dataURL = canvas.toDataURL('image/png').replace("image/png", "image/octet-stream");
+
+                const form = new FormData()
+                form.append('file', makeBlob(dataURL))
+                let response = await fetch("/upload", {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    processData: false,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: form
+                });
+
+                let result = await response.json();
+                ctx.font = "30px Arial";
+                ctx.fillStyle = "green";
+                ctx.fillText(result, 10, 50);
+                console.log(result);
+            }
+        });
+
+        // toolbar.addEventListener('change', e => {
+        //     if(e.target.id === 'stroke') {
+        //         ctx.strokeStyle = e.target.value;
+        //     }
+
+        //     if(e.target.id === 'lineWidth') {
+        //         lineWidth = e.target.value;
+        //     }
+
+        // });
+
+        const draw = (e) => {
+            if (!isPainting) {
+                return;
+            }
+
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = 'white'
+            ctx.lineCap = 'round';
+
+            ctx.lineTo(e.clientX - canvasOffsetX, e.clientY);
+            ctx.stroke();
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isPainting = true;
+            startX = e.clientX;
+            startY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseup', e => {
+            isPainting = false;
+            ctx.stroke();
+            ctx.beginPath();
+        });
+
+        canvas.addEventListener('mousemove', draw);
+
+    </script>
+</body>
+
+</html>
