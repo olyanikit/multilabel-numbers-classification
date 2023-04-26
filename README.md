@@ -1,6 +1,6 @@
 # Multi-label classification
 Model trained on paired images of digits from MNIST dataset.
-There are still 10 classes, and two indices of max logits is taken to predict number
+There are 10 classes, and two indices of max logits is taken to predict number
 
 
 ## Usage
